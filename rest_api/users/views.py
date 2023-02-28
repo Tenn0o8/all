@@ -139,6 +139,7 @@ class getItemByID(APIView):
             'id': item.id,
             'name': item.name,
             'condition': item.condition,
+            'IMEI': item.IMEI,
             'location': [i.json() for i in location]
         }
 

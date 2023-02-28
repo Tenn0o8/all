@@ -19,8 +19,8 @@ if __name__ == '__main__':
 
     def on_connect(client, userdata, flags, rc, properties=None):
         if rc == 0:
-            client.subscribe("devices_GPS/#", qos=0)
-            client.subscribe("devices_control/#", qos=0)
+            client.subscribe("gps/#", qos=0)
+            client.subscribe("engine_ack/#", qos=0)
             client.subscribe("test/#", qos=0)
             print("CONNACK received with code %s." % rc)
         else:
@@ -35,18 +35,19 @@ if __name__ == '__main__':
     def on_message(client, userdata, msg):
         device_topic = msg.topic.rsplit('/')
         # khung topic device_GPS/IMEI
-        if device_topic[0] == 'devices_GPS':
+        if device_topic[0] == 'gps':
             # khung ban tin: 123.12345/123.12345/imeiimeiimei/
+            # khung ban tin: imei/123.123/123.123/ 
             content = msg.payload.decode("utf-8")
             list = content.rsplit('/')
 
-            if len(list) == 3 and device_topic[1] == list[2]:
+            if len(list) == 3 and device_topic[1] == list[0]:
                 try:
-                    device = item.objects.get(IMEI=list[2])
+                    device = item.objects.get(IMEI=list[0])
                     device_id = device.id
                     payload = {
-                        'lat': float(list[0]),
-                        'lng': float(list[1]),
+                        'lat': float(list[1]),
+                        'lng': float(list[2]),
                         'original_item': device_id
                     }
                     serializer = LocationSerializer(data=payload)
@@ -57,7 +58,7 @@ if __name__ == '__main__':
                     print("Cannot save your messages")
             else:
                 print("Cannot save your messages, wrong topic")
-        elif device_topic[0] == 'devices_control':
+        elif device_topic[0] == 'engine_ack':
             # khung ban tin: imeiimeiimei/0-1
             content = msg.payload.decode("utf-8")
             list = content.rsplit('/')
